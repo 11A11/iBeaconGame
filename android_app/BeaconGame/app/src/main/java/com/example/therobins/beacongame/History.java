@@ -14,6 +14,13 @@ public class History extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
 
+        if(MainActivity.position != 0){
+            levels = new String[MainActivity.position];
+            for(int x=0; x < MainActivity.position; x++){
+                levels[x] = MainActivity.hints.get(x).getText_hint();
+            }
+        }
+
         listView = (ListView)findViewById(R.id.history_listView);
         CustomList adapter = new CustomList(this, levels);
         listView.setAdapter(adapter);
