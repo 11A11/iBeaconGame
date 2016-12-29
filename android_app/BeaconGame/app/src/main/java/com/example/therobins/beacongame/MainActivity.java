@@ -17,23 +17,39 @@ import android.widget.Toast;
 import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.MonitorNotifier;
 import org.altbeacon.beacon.Region;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     private String TAG = "Main Activity";
     private BeaconManager beaconManager;
+    private static final Identifier nameSpaceId = Identifier.parse("0x5dc33487f02e477d4058");
+    public ArrayList<Region> ssnRegionList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ssnRegionList = new ArrayList<>();
+
         if(!isBlueEnable()){
             Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(bluetoothIntent);
         }
+
+        ssnRegionList.add(new Region("Python Room",nameSpaceId,Identifier.parse("0x0117c555c65f"),null));
+        ssnRegionList.add(new Region("Test Room",nameSpaceId, Identifier.parse("0x0117c59825E9"),null));
+        ssnRegionList.add(new Region("Git Room",nameSpaceId,Identifier.parse("0x0117c55be3a8"),null));
+        ssnRegionList.add(new Region("Android Room",nameSpaceId,Identifier.parse("0x0117c552c493"),null));
+        ssnRegionList.add(new Region("iOS Room",nameSpaceId,Identifier.parse("0x0117c55fc452"),null));
+        ssnRegionList.add(new Region("Office",nameSpaceId,Identifier.parse("0x0117c55d6660"),null));
+        ssnRegionList.add(new Region("Ruby Room",nameSpaceId,Identifier.parse("0x0117c55ec086"),null));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android M Permission check 
@@ -116,9 +132,8 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                 Log.i(TAG, "I have just switched from seeing/not seeing beacons: " + state);
                 switch (state) {
                     case 1:
-                        Log.e(TAG, "connected to" + region.getId2());
                         Toast.makeText(MainActivity.this, "Connected to " + region.getId2(), Toast.LENGTH_LONG).show();
-                        Log.e(TAG, "connected to" + region.getId2());
+                        Log.e(TAG, "connected to " + region.getId2() + " from " + region.getUniqueId());
                         break;
 
                     case 0:
@@ -129,8 +144,11 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         });
 
         try {
-            beaconManager.startMonitoringBeaconsInRegion(new Region("myMonitoringUniqueId", null, null, null));
+            for(Region region:ssnRegionList) {
+                beaconManager.startMonitoringBeaconsInRegion(region);
+            }
         } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
 
