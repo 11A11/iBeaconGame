@@ -19,8 +19,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".History" />
-        <activity android:name=".Hints" />
+
+        <activity android:name=".History" >
+        </activity>
+
         <activity android:name=".Rules"></activity>
     </application>
 
