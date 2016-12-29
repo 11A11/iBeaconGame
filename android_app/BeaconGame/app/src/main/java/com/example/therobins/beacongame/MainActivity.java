@@ -21,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.altbeacon.beacon.BeaconConsumer;
@@ -77,6 +78,8 @@ public class MainActivity extends AppCompatActivity
     public static int position = 0;
     private PlaybackControlView playerView;
     private SimpleExoPlayer player;
+    private TextView title;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +87,8 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         playerView = (PlaybackControlView) findViewById(R.id.player_view);
         setSupportActionBar(toolbar);
+        title = (TextView) findViewById(R.id.hint_title);
+        title.setText("Go for Hunt");
         playerView.setShowDurationMs(0);
 
         Handler mainHandler = new Handler();
@@ -117,13 +122,11 @@ public class MainActivity extends AppCompatActivity
             startActivity(bluetoothIntent);
         }
 
-        ssnRegionList.add(new Region("Python Room",nameSpaceId,Identifier.parse("0x0117c555c65f"),null));
-        ssnRegionList.add(new Region("Test Room",nameSpaceId, Identifier.parse("0x0117c59825E9"),null));
         ssnRegionList.add(new Region("Git Room",nameSpaceId,Identifier.parse("0x0117c55be3a8"),null));
         ssnRegionList.add(new Region("Android Room",nameSpaceId,Identifier.parse("0x0117c552c493"),null));
         ssnRegionList.add(new Region("iOS Room",nameSpaceId,Identifier.parse("0x0117c55fc452"),null));
         ssnRegionList.add(new Region("Office",nameSpaceId,Identifier.parse("0x0117c55d6660"),null));
-        ssnRegionList.add(new Region("Ruby Room",nameSpaceId,Identifier.parse("0x0117c55ec086"),null));
+        ssnRegionList.add(new Region("Python Room",nameSpaceId,Identifier.parse("0x0117c555c65f"),null));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android M Permission check 
@@ -342,6 +345,8 @@ public class MainActivity extends AppCompatActivity
 
 // Prepare the player with the source.
         player.prepare(videoSource);
+
+        title.setText(position + ". " + hints.get(position-1).getText_hint());
     }
 
     @Override
