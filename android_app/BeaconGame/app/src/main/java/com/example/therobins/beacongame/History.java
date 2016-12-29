@@ -2,7 +2,10 @@ package com.example.therobins.beacongame;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class History extends AppCompatActivity {
 
@@ -24,5 +27,16 @@ public class History extends AppCompatActivity {
         listView = (ListView)findViewById(R.id.history_listView);
         CustomList adapter = new CustomList(this, levels);
         listView.setAdapter(adapter);
+
+        listView.setClickable(true);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                Toast.makeText(getApplicationContext(),"Something",Toast.LENGTH_SHORT).show();
+            }
+        }
+        );
     }
 }
