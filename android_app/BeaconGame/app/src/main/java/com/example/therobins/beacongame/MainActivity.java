@@ -6,7 +6,9 @@ import android.bluetooth.BluetoothManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -36,13 +38,35 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.AdaptiveVideoTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.PlaybackControlView;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
-        implements BeaconConsumer, Response.Listener<String>, Response.ErrorListener, NavigationView.OnNavigationItemSelectedListener {
+        implements BeaconConsumer, Response.Listener<String>, Response.ErrorListener,
+        NavigationView.OnNavigationItemSelectedListener, ExoPlayer.EventListener{
 
     private String TAG = "Main Activity";
     private BeaconManager beaconManager;
@@ -51,12 +75,29 @@ public class MainActivity extends AppCompatActivity
     public static ArrayList<Hint> hints;
     private RequestQueue queue;
     public static int position = 0;
+    private PlaybackControlView playerView;
+    private SimpleExoPlayer player;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        playerView = (PlaybackControlView) findViewById(R.id.player_view);
         setSupportActionBar(toolbar);
+        playerView.setShowDurationMs(0);
+
+        Handler mainHandler = new Handler();
+        BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+        TrackSelection.Factory videoTrackSelectionFactory =
+                new AdaptiveVideoTrackSelection.Factory(bandwidthMeter);
+        TrackSelector trackSelector =
+                new DefaultTrackSelector(mainHandler, videoTrackSelectionFactory);
+
+        LoadControl loadControl = new DefaultLoadControl();
+        player = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
+        player.addListener(this);
+        player.setPlayWhenReady(true);
+        playerView.setPlayer(player);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -219,7 +260,7 @@ public class MainActivity extends AppCompatActivity
                 final Region reg = region;
                 switch (state) {
                     case 1:
-                        Toast.makeText(MainActivity.this, "Connected to " + region.getId2(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Connected to " + region.getUniqueId(), Toast.LENGTH_LONG).show();
                         Log.e(TAG, "connected to " + region.getId2() + " from " + region.getUniqueId());
                         StringRequest jsonRequest = new StringRequest(Request.Method.POST,
                                 "https://enigmatic-spire-47769.herokuapp.com/getHint",
@@ -237,7 +278,7 @@ public class MainActivity extends AppCompatActivity
                         break;
 
                     case 0:
-                        Toast.makeText(MainActivity.this, "Disconnected " + region.getId2(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Disconnected " + region.getUniqueId(), Toast.LENGTH_LONG).show();
                         break;
                 }
             }
@@ -287,5 +328,44 @@ public class MainActivity extends AppCompatActivity
         }
         hints.add(hint);
         position++;
+
+        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+// Produces DataSource instances through which media data is loaded.
+        DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(this,
+                Util.getUserAgent(this, "BeaconGame"), bandwidthMeter);
+// Produces Extractor instances for parsing the media data.
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+// This is the MediaSource representing the media to be played.
+        MediaSource videoSource = null;
+            videoSource = new ExtractorMediaSource(Uri.parse(hints.get(position-1).getAudio_hint()),
+                    dataSourceFactory, extractorsFactory, null, null);
+
+// Prepare the player with the source.
+        player.prepare(videoSource);
+    }
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
+
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+
+    }
+
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+    }
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
+
     }
 }

@@ -43,6 +43,7 @@ dependencies {
     //compile 'com.android.support:appcompat-v7:25.1.0'
     //compile 'com.android.support:design:25.1.0'
     compile 'com.android.support:design:23.+'
+    compile 'com.google.android.exoplayer:exoplayer:r2.0.0'
     compile 'org.altbeacon:android-beacon-library:2+'
     testCompile 'junit:junit:4.12'
 }
